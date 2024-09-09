@@ -25,6 +25,9 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     // usar transactional(readOnly = true) em toda op que é somente leitura
 
     //garante que a op é uma transação com db e readonly não trava o banco melhorando a performance
@@ -54,7 +57,7 @@ public class ProductService {
         Optional<Product> obj = productRepository.findById(id);
         Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("ID not found: " + id));
 
-        //entity.setName(dto.getName());
+        copyDtoToEntity(dto, entity);
         entity = productRepository.save(entity);
         return new ProductDTO(entity);
     }
@@ -77,5 +80,10 @@ public class ProductService {
         entity.setDate(dto.getDate());
         entity.setImgUrl(dto.getImgUrl());
         entity.setPrice(dto.getPrice());
+
+        for (CategoryDTO catDto : dto.getCategories()) {
+            Category cat = categoryRepository.getReferenceById(catDto.getId());
+            entity.getCategories().add(cat);
+        }
     }
 }
